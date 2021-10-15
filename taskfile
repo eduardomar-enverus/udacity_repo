@@ -35,22 +35,22 @@ function install-dev-requirements {
   pip install -r requirements-dev.txt
 }
 
-#function install {
-#  install-requirements
-#  install-dev-requirements
-#  pip install --no-deps -e .
-#}
-#
-#function uninstall {
-#  # Uninstall task for your project
-#  /usr/bin/yes | pip uninstall completion_sensitizer -r requirements-pre.txt -r requirements.txt -r requirements-dev.txt
-#}
-#
-#function reinstall {
-#  uninstall
-#  install
-#  echo "Reinstalled dependencies"
-#}
+function install {
+  install-requirements
+  install-dev-requirements
+  pip install --no-deps -e .
+}
+
+function uninstall {
+  # Uninstall task for your project
+  /usr/bin/yes | pip uninstall completion_sensitizer -r requirements-pre.txt -r requirements.txt -r requirements-dev.txt
+}
+
+function reinstall {
+  uninstall
+  install
+  echo "Reinstalled dependencies"
+}
 
 function install-package {
   pip install "$@"
