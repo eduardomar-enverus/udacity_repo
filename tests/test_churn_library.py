@@ -17,15 +17,6 @@ from churn_analysis.churn_library import (
 )
 
 
-# logging.basicConfig(
-#     filename="logs/churn_library.log",
-#     level=logging.INFO,
-#     filemode="w",
-#     format="%(name)s - %(levelname)s - %(message)s",
-# )
-# from churn_analysis.churn_library import import_data
-
-
 def test_import_data():
     pth = Path(__file__).parent.parent / "churn_analysis"
     try:
