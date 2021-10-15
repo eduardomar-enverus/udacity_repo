@@ -1,0 +1,7 @@
+flake8==3.7.7
+bokeh==1.1.0
+black==19.3b0
+pytest==5.0.0
+pytest-cov==2.8.1
+pytest-html==2.0.0
+twine==2.0.0

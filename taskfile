@@ -1,0 +1,107 @@
+#!/bin/bash
+set -e
+
+################################################################################
+# VARIABLES
+SOURCE_DIRECTORY='./'
+
+################################################################################
+# HELPER FUNCTIONS
+
+function errcho { >&2 echo $@; }
+
+
+################################################################################
+# ACTIONS
+
+function clear-cache {
+  if [ "${OS_TYPE}" == "darwin" ]; then
+    find . -name "__pycache__" -prune -exec rm -rf {} \;
+    find . -name "*.pyc" -prune -exec rm -rf {} \;
+    find . -name "*.pytest_cache" -prune -exec rm -rf {} \;
+  elif [ "${OS_TYPE}" == "linux-gnu" ]; then
+    find -type d -name __pycache__ -prune -exec rm -rf {} \;
+    find -type d -name .pyc -prune -exec rm -rf {} \;
+    find -type d -name .pytest_cache -prune -exec rm -rf {} \;
+  fi
+}
+
+#function install-requirements {
+#  pip install -r requirements-pre.txt
+#  pip install -r requirements.txt
+#}
+
+function install-dev-requirements {
+  pip install -r requirements-dev.txt
+}
+
+#function install {
+#  install-requirements
+#  install-dev-requirements
+#  pip install --no-deps -e .
+#}
+#
+#function uninstall {
+#  # Uninstall task for your project
+#  /usr/bin/yes | pip uninstall completion_sensitizer -r requirements-pre.txt -r requirements.txt -r requirements-dev.txt
+#}
+#
+#function reinstall {
+#  uninstall
+#  install
+#  echo "Reinstalled dependencies"
+#}
+
+function install-package {
+  pip install "$@"
+  update-constraints
+}
+
+function format-apply {
+  python -m black ${SOURCE_DIRECTORY} -l 119 -t py36 "$@"
+}
+
+function format-check {
+  format-apply --check
+}
+
+function lint {
+  clear-cache
+  python -m flake8 ${SOURCE_DIRECTORY} --max-line-length 119
+}
+
+################################################################################
+# DEFAULT => INFO
+
+function _default {
+  echo "$(basename "$0") <task> <args>"
+  echo
+  echo "Available tasks:"
+  compgen -A function | grep -v '^_' | grep -v '^errcho' | cat -n
+}
+
+################################################################################
+# PARSE GLOBAL PARAMETERS
+
+while [[ $# -gt 0 ]]; do
+key="$1"
+
+case $key in
+    --disable-numba)
+    errcho "NUMBA: DISABLED"
+    NUMBA_DISABLE_JIT=1
+    shift # past value
+    ;;
+    --debug)
+    DEBUG=YES
+    shift # past argument
+    ;;
+    *)
+    params+=("$1") # save it in an array for later
+    shift # past argument
+    ;;
+esac
+done
+
+TIMEFORMAT="Task completed in %3lR"
+time ${params[@]:-_default}

@@ -17,7 +17,7 @@ from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.metrics import classification_report
 
 
-def import_data(pth='data/bank_data.csv'):
+def import_data(pth="data/bank_data.csv"):
     """
     returns dataframe for the csv found at pth
 
@@ -46,8 +46,8 @@ def prepare_data(df):
        output:
                df: pandas dataframe with new column substituting Attrittion_Flag for Churn
     """
-    df['Churn'] = df['Attrition_Flag'].apply(lambda val: 0 if val == "Existing Customer" else 1)
-    df = df.drop(columns = ["Attrition_Flag"])
+    df["Churn"] = df["Attrition_Flag"].apply(lambda val: 0 if val == "Existing Customer" else 1)
+    df = df.drop(columns=["Attrition_Flag"])
     return df
 
 
@@ -69,7 +69,7 @@ def classify_columns(df):
     return all_cols, categorical_cols, numeric_cols
 
 
-def perform_eda(df, categorical_cols, numeric_cols):
+def perform_eda(df, categorical_cols, numeric_cols, pth=f"./images/eda/"):
     """
     perform eda on df and save figures to images folder
     input:
@@ -78,6 +78,7 @@ def perform_eda(df, categorical_cols, numeric_cols):
     output:
             None
     """
+    df = df[categorical_cols + numeric_cols]
 
     print("Dataframe shape = ", df.shape)
     print()
@@ -92,7 +93,7 @@ def perform_eda(df, categorical_cols, numeric_cols):
         sns.displot(df[col])
         fig = plt.gcf()
         fig.set_size_inches(20, 10)
-        fig.savefig(f'./images/eda/Numeric_Dist_{col}.png', dpi=400)
+        fig.savefig(pth + f"Numeric_Dist_{col}.png", dpi=400)
         plt.close()
 
     # Categorical column histograms
@@ -101,28 +102,28 @@ def perform_eda(df, categorical_cols, numeric_cols):
         plt.xticks(rotation=45)
         fig = plt.gcf()
         fig.set_size_inches(20, 10)
-        fig.savefig(f'./images/eda/Categorical_Dist_{col}.png', dpi=400)
+        fig.savefig(pth + f"Categorical_Dist_{col}.png", dpi=400)
         plt.close()
 
         sns.histplot(df[col], stat="percent")
         plt.xticks(rotation=45)
         fig = plt.gcf()
         fig.set_size_inches(20, 10)
-        fig.savefig(f'./images/eda/Categorical_Dist_Normalized_{col}.png', dpi=400)
+        fig.savefig(pth + f"Categorical_Dist_Normalized_{col}.png", dpi=400)
         plt.close()
 
     # Correlation plot
-    sns.heatmap(df.corr(), annot=False, cmap='Dark2_r', linewidths=2)
+    sns.heatmap(df.corr(), annot=False, cmap="Dark2_r", linewidths=2)
     fig = plt.gcf()
     plt.figure(figsize=(20, 10))
-    fig.savefig(f'./images/eda/Correlation_Matrix.png', dpi=400)
+    fig.savefig(pth + f"Correlation_Matrix.png", dpi=400)
     plt.close()
 
     # Pairplot
     sns.pairplot(df)
     fig = plt.gcf()
     plt.figure(figsize=(20, 10))
-    fig.savefig(f'./images/eda/Pairplot.png', dpi=400)
+    fig.savefig(pth + "Pairplot.png", dpi=400)
     plt.close()
 
 
@@ -134,15 +135,16 @@ def encoder_helper(df, category_lst, response=None):
     input:
             df: pandas dataframe
             category_lst: list of columns that contain categorical features
-            response: string of response name [optional argument that could be used for naming variables or index y column]
+            response: string of response name [optional argument that could be used for naming variables or
+            index y column]
 
     output:
             df: pandas dataframe with new columns for
     """
     encoder_cols = []
     for col in category_lst:
-        temp_dict = df.groupby(col).mean()['Churn'].to_dict()
-        new_col_name = col+'_Churn'
+        temp_dict = df.groupby(col).mean()["Churn"].to_dict()
+        new_col_name = col + "_Churn"
         if response:
             new_col_name = response
         df[new_col_name] = df[col].map(temp_dict)
@@ -169,7 +171,8 @@ def perform_feature_engineering(df, keep_cols, response=None):
     """
     input:
               df: pandas dataframe
-              response: string of response name [optional argument that could be used for naming variables or index y column]
+              response: string of response name [optional argument that could be used for naming variables or
+              index y column]
 
     output:
               X_train: X training data
@@ -177,18 +180,13 @@ def perform_feature_engineering(df, keep_cols, response=None):
               y_train: y training data
               y_test: y testing data
     """
-    y = df['Churn']
+    y = df["Churn"]
     X = df[keep_cols]
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
     return X_train, X_test, y_train, y_test
 
 
-def classification_report_image(y_train,
-                                y_test,
-                                y_train_preds_lr,
-                                y_train_preds_rf,
-                                y_test_preds_lr,
-                                y_test_preds_rf):
+def classification_report_image(y_train, y_test, y_train_preds_lr, y_train_preds_rf, y_test_preds_lr, y_test_preds_rf):
     """
     produces classification report for training and testing results and stores report as image
     in images folder
@@ -203,16 +201,16 @@ def classification_report_image(y_train,
     output:
              None
     """
-    print('random forest results')
-    print('test results')
+    print("random forest results")
+    print("test results")
     print(classification_report(y_test, y_test_preds_rf))
-    print('train results')
+    print("train results")
     print(classification_report(y_train, y_train_preds_rf))
 
-    print('logistic regression results')
-    print('test results')
+    print("logistic regression results")
+    print("test results")
     print(classification_report(y_test, y_test_preds_lr))
-    print('train results')
+    print("train results")
     print(classification_report(y_train, y_train_preds_lr))
 
 
@@ -240,7 +238,7 @@ def feature_importance_plot(model, X_data, output_pth):
 
     # Create plot title
     plt.title("Feature Importance")
-    plt.ylabel('Importance')
+    plt.ylabel("Importance")
 
     # Add bars
     plt.bar(range(X_data.shape[1]), importances[indices])
@@ -251,7 +249,7 @@ def feature_importance_plot(model, X_data, output_pth):
     fig = plt.gcf()
     plt.figure(figsize=(20, 10))
 
-    save_pth = output_pth + 'feature_importance_.png'
+    save_pth = output_pth + "feature_importance_.png"
     fig.savefig(save_pth, dpi=400)
     plt.close()
 
@@ -272,10 +270,10 @@ def train_models(X_train, X_test, y_train, y_test):
     lrc = LogisticRegression()
 
     param_grid = {
-        'n_estimators': [200, 500],
-        'max_features': ['auto', 'sqrt'],
-        'max_depth': [4, 5, 100],
-        'criterion': ['gini', 'entropy']
+        "n_estimators": [200, 500],
+        "max_features": ["auto", "sqrt"],
+        "max_depth": [4, 5, 100],
+        "criterion": ["gini", "entropy"],
     }
 
     cv_rfc = GridSearchCV(estimator=rfc, param_grid=param_grid, cv=5)
@@ -292,23 +290,17 @@ def train_models(X_train, X_test, y_train, y_test):
     y_train_preds_lr = lrc.predict(X_train)
     y_test_preds_lr = lrc.predict(X_test)
 
-    classification_report_image(y_train,
-                                y_test,
-                                y_train_preds_lr,
-                                y_train_preds_rf,
-                                y_test_preds_lr,
-                                y_test_preds_rf)
-
+    classification_report_image(y_train, y_test, y_train_preds_lr, y_train_preds_rf, y_test_preds_lr, y_test_preds_rf)
 
     # Random forest
-    feature_importance_plot(cv_rfc_best, X_test, output_pth = "./images/results/")
+    feature_importance_plot(cv_rfc_best, X_test, output_pth="./images/results/")
 
     # Logistic Regression
     # feature_importance_plot(lrc, X_test, output_pth = "./images/results")
 
     # save best model
-    joblib.dump(cv_rfc_best, './models/rfc_model.pkl')
-    joblib.dump(lrc, './models/logistic_model.pkl')
+    joblib.dump(cv_rfc_best, "models/rfc_model.pkl")
+    joblib.dump(lrc, "models/logistic_model.pkl")
 
 
 def main_pipeline():
