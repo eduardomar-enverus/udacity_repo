@@ -249,12 +249,12 @@ def feature_importance_plot(model, X_data, output_pth):
     fig = plt.gcf()
     plt.figure(figsize=(20, 10))
 
-    save_pth = output_pth + "feature_importance_.png"
+    save_pth = output_pth + "feature_importance.png"
     fig.savefig(save_pth, dpi=400)
     plt.close()
 
 
-def train_models(X_train, X_test, y_train, y_test):
+def train_models(X_train, X_test, y_train, y_test, feature_selection_pth="./images/results/", model_pth="./models/"):
     """
     train, store model results: images + scores, and store models
     input:
@@ -293,14 +293,14 @@ def train_models(X_train, X_test, y_train, y_test):
     classification_report_image(y_train, y_test, y_train_preds_lr, y_train_preds_rf, y_test_preds_lr, y_test_preds_rf)
 
     # Random forest
-    feature_importance_plot(cv_rfc_best, X_test, output_pth="./images/results/")
+    feature_importance_plot(cv_rfc_best, X_test, output_pth=feature_selection_pth)
 
     # Logistic Regression
     # feature_importance_plot(lrc, X_test, output_pth = "./images/results")
 
     # save best model
-    joblib.dump(cv_rfc_best, "models/rfc_model.pkl")
-    joblib.dump(lrc, "models/logistic_model.pkl")
+    joblib.dump(cv_rfc_best, model_pth + "rfc_model.pkl")
+    joblib.dump(lrc, model_pth + "logistic_model.pkl")
 
 
 def main_pipeline():
