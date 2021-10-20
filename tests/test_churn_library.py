@@ -16,13 +16,6 @@ from churn_analysis.churn_library import (
     train_models,
 )
 
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s.%(msecs)03d %(levelname)s %(module)s - %(funcName)s: %(message)s",
-    filename = "logs/all_logs.log",
-    datefmt="%Y-%m-%d %H:%M",
-)
-
 
 def test_import_data():
     pth = Path(__file__).parent.parent / "churn_analysis"
@@ -129,7 +122,6 @@ def test_perform_eda():
         ]
         assert filenames == expected_filenames
         logging.info("Testing perform eda: SUCCESS")
-
 
 
 def test_encoder_helper():
@@ -383,6 +375,6 @@ def test_train_models():
         filenames = [f for f in os.listdir(temp_dir) if os.path.isfile(os.path.join(temp_dir, f))]
         filenames = sorted(filenames)
 
-        expected_files = ["ROC_curve.png","feature_importance.png", "logistic_model.pkl", "rfc_model.pkl"]
+        expected_files = ["ROC_curve.png", "feature_importance.png", "logistic_model.pkl", "rfc_model.pkl"]
 
         assert filenames == expected_files

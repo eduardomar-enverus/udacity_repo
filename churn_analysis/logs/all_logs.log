@@ -6,3 +6,9 @@
 2021-10-20 08:58.325 INFO churn_library - encoder_helper: SUCCESS: Encoded categorical features into churn proportion columns
 2021-10-20 08:58.325 INFO churn_library - cols_to_keep: Defined columns to keep for X train dataframe
 2021-10-20 08:58.329 INFO churn_library - perform_feature_engineering: SUCCESS: Split data into X_train, X_test, y_train, y_test
+2021-10-20 09:01.549 INFO churn_library - train_models: SUCCESS: Fitted grid search random forest
+2021-10-20 09:01.603 INFO churn_library - train_models: SUCCESS: Fitted logistic regression
+2021-10-20 09:01.054 INFO churn_library - classification_report_image: Printed classification report for both models
+2021-10-20 09:01.730 INFO churn_library - feature_importance_plot: SUCCESS: Generated feature importance plot
+2021-10-20 09:01.077 INFO churn_library - roc_plot: SUCCESS: Generated ROC plot
+2021-10-20 09:01.267 INFO churn_library - train_models: SUCCESS: Saved both models

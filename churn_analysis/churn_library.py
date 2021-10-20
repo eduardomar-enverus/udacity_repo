@@ -1,4 +1,9 @@
-# library doc string
+"""
+Module for calculating customer churn on bank data
+
+Author: Eduardo Martinez
+Date: 10/20/2021
+"""
 
 
 # import libraries
@@ -16,7 +21,12 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.metrics import classification_report, plot_roc_curve
 
-from tests.test_churn_library import logging
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s.%(msecs)03d %(levelname)s %(module)s - %(funcName)s: %(message)s",
+    filename="logs/all_logs.log",
+    datefmt="%Y-%m-%d %H:%M",
+)
 
 
 def import_data(pth="data/bank_data.csv"):
@@ -130,7 +140,7 @@ def perform_eda(df, categorical_cols, numeric_cols, pth=f"./images/eda/"):
     fig.savefig(pth + "Pairplot.png", dpi=400)
     plt.close()
 
-    logging.info(f"SUCCESS: Performed EDA in dataframe. Plots saved here {pth}")
+    logging.info("SUCCESS: Performed EDA in dataframe. Plots saved here {pth}")
 
 
 def encoder_helper(df, category_lst, response=None):
@@ -156,7 +166,7 @@ def encoder_helper(df, category_lst, response=None):
         df[new_col_name] = df[col].map(temp_dict)
         encoder_cols.append(new_col_name)
 
-    logging.info(f"SUCCESS: Encoded categorical features into churn proportion columns")
+    logging.info("SUCCESS: Encoded categorical features into churn proportion columns")
 
     return df, encoder_cols
 
@@ -172,12 +182,12 @@ def cols_to_keep(numeric_cols: List, encoder_cols: List):
              keep_cols: list of columns to keep for training X array
     """
     keep_cols = list(set(numeric_cols + encoder_cols) - {"Churn"} - {"CLIENTNUM"})
-    logging.info(f"Defined columns to keep for X train dataframe")
+    logging.info("Defined columns to keep for X train dataframe")
 
     return keep_cols
 
 
-def perform_feature_engineering(df, keep_cols, response=None):
+def perform_feature_engineering(df, keep_cols):
     """
     input:
               df: pandas dataframe
@@ -193,7 +203,7 @@ def perform_feature_engineering(df, keep_cols, response=None):
     y = df["Churn"]
     X = df[keep_cols]
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
-    logging.info(f"SUCCESS: Split data into X_train, X_test, y_train, y_test")
+    logging.info("SUCCESS: Split data into X_train, X_test, y_train, y_test")
 
     return X_train, X_test, y_train, y_test
 
@@ -225,7 +235,7 @@ def classification_report_image(y_train, y_test, y_train_preds_lr, y_train_preds
     print("train results")
     print(classification_report(y_train, y_train_preds_lr))
 
-    logging.info(f"Printed classification report for both models")
+    logging.info("Printed classification report for both models")
 
 
 def feature_importance_plot(model, X_data, output_pth):
@@ -267,7 +277,7 @@ def feature_importance_plot(model, X_data, output_pth):
     fig.savefig(save_pth, dpi=400)
     plt.close()
 
-    logging.info(f"SUCCESS: Generated feature importance plot")
+    logging.info("SUCCESS: Generated feature importance plot")
 
 
 def roc_plot(rf, lrc, X_test, y_test, output_pth):
@@ -301,7 +311,7 @@ def roc_plot(rf, lrc, X_test, y_test, output_pth):
     fig.savefig(save_pth, dpi=400)
     plt.close()
 
-    logging.info(f"SUCCESS: Generated ROC plot")
+    logging.info("SUCCESS: Generated ROC plot")
 
 
 def train_models(X_train, X_test, y_train, y_test, results_pth="./images/results/", model_pth="./models/"):
@@ -328,10 +338,10 @@ def train_models(X_train, X_test, y_train, y_test, results_pth="./images/results
 
     cv_rfc = GridSearchCV(estimator=rfc, param_grid=param_grid, cv=5)
     cv_rfc.fit(X_train, y_train)
-    logging.info(f"SUCCESS: Fitted grid search random forest")
+    logging.info("SUCCESS: Fitted grid search random forest")
 
     lrc.fit(X_train, y_train)
-    logging.info(f"SUCCESS: Fitted logistic regression")
+    logging.info("SUCCESS: Fitted logistic regression")
 
     # Save best model for random forest
     cv_rfc_best = cv_rfc.best_estimator_
@@ -353,13 +363,20 @@ def train_models(X_train, X_test, y_train, y_test, results_pth="./images/results
     # save best model
     joblib.dump(cv_rfc_best, model_pth + "rfc_model.pkl")
     joblib.dump(lrc, model_pth + "logistic_model.pkl")
-    logging.info(f"SUCCESS: Saved both models")
+    logging.info("SUCCESS: Saved both models")
 
 
 def main_pipeline():
+    """
+    Runs pipeline to calculate customer churn at bank
+    input:
+            None
+    output:
+            None
+    """
     data = import_data()
     data = prepare_data(data)
-    all_cols, categorical_cols, numeric_cols = classify_columns(data)
+    _, categorical_cols, numeric_cols = classify_columns(data)
     perform_eda(data, categorical_cols, numeric_cols)
     data, encoder_cols = encoder_helper(data, category_lst=categorical_cols)
     keep_cols = cols_to_keep(numeric_cols, encoder_cols)
