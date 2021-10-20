@@ -16,6 +16,13 @@ from churn_analysis.churn_library import (
     train_models,
 )
 
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s.%(msecs)03d %(levelname)s %(module)s - %(funcName)s: %(message)s",
+    filename = "logs/all_logs.log",
+    datefmt="%Y-%m-%d %H:%M",
+)
+
 
 def test_import_data():
     pth = Path(__file__).parent.parent / "churn_analysis"
@@ -26,12 +33,8 @@ def test_import_data():
         logging.error("Testing import_eda: The file wasn't found")
         raise err
 
-    try:
-        assert df.shape[0] > 0
-        assert df.shape[1] > 0
-    except AssertionError as err:
-        logging.error("Testing import_data: The file doesn't appear to have rows and columns")
-        raise err
+    assert df.shape[0] > 0
+    assert df.shape[1] > 0
 
 
 def test_perform_eda():
@@ -124,8 +127,9 @@ def test_perform_eda():
             "Numeric_Dist_Total_Revolving_Bal.png",
             "Pairplot.png",
         ]
-
         assert filenames == expected_filenames
+        logging.info("Testing perform eda: SUCCESS")
+
 
 
 def test_encoder_helper():
@@ -374,15 +378,11 @@ def test_train_models():
         X_test = pd.DataFrame({"Customer_Age": [45, 32, 51], "Total_Revolving_Bal": [777, 1396, 0]})
         y_test = pd.Series([0, 0, 0], dtype=np.int64, name="Churn")
 
-        train_models(X_train, X_test, y_train, y_test, feature_selection_pth=temp_dir, model_pth=temp_dir)
+        train_models(X_train, X_test, y_train, y_test, results_pth=temp_dir, model_pth=temp_dir)
 
         filenames = [f for f in os.listdir(temp_dir) if os.path.isfile(os.path.join(temp_dir, f))]
         filenames = sorted(filenames)
 
-        expected_files = ["feature_importance.png", "logistic_model.pkl", "rfc_model.pkl"]
+        expected_files = ["ROC_curve.png","feature_importance.png", "logistic_model.pkl", "rfc_model.pkl"]
 
         assert filenames == expected_files
-
-
-if __name__ == "__main__":
-    pass

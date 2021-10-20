@@ -14,7 +14,9 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
 
 from sklearn.model_selection import train_test_split, GridSearchCV
-from sklearn.metrics import classification_report
+from sklearn.metrics import classification_report, plot_roc_curve
+
+from tests.test_churn_library import logging
 
 
 def import_data(pth="data/bank_data.csv"):
@@ -26,10 +28,10 @@ def import_data(pth="data/bank_data.csv"):
     output:
             df: pandas dataframe
     """
+
     try:
         df = pd.read_csv(pth, index_col=0)
         logging.info("SUCCESS: Data imported")
-
     except FileNotFoundError as err:
         logging.error(err, "ERROR: FileNotFoundError")
         raise err
@@ -48,6 +50,7 @@ def prepare_data(df):
     """
     df["Churn"] = df["Attrition_Flag"].apply(lambda val: 0 if val == "Existing Customer" else 1)
     df = df.drop(columns=["Attrition_Flag"])
+    logging.info("Converted Attrition_Flag feature into binary Churn feature")
     return df
 
 
@@ -66,6 +69,7 @@ def classify_columns(df):
     all_cols = sorted(list(df.columns))
     categorical_cols = [col for col in all_cols if df[col].dtype == "O"]
     numeric_cols = list(set(all_cols) - set(categorical_cols))
+    logging.info("Classified all dataframes columns into categorical or numerical")
     return all_cols, categorical_cols, numeric_cols
 
 
@@ -126,6 +130,8 @@ def perform_eda(df, categorical_cols, numeric_cols, pth=f"./images/eda/"):
     fig.savefig(pth + "Pairplot.png", dpi=400)
     plt.close()
 
+    logging.info(f"SUCCESS: Performed EDA in dataframe. Plots saved here {pth}")
+
 
 def encoder_helper(df, category_lst, response=None):
     """
@@ -150,6 +156,8 @@ def encoder_helper(df, category_lst, response=None):
         df[new_col_name] = df[col].map(temp_dict)
         encoder_cols.append(new_col_name)
 
+    logging.info(f"SUCCESS: Encoded categorical features into churn proportion columns")
+
     return df, encoder_cols
 
 
@@ -164,6 +172,8 @@ def cols_to_keep(numeric_cols: List, encoder_cols: List):
              keep_cols: list of columns to keep for training X array
     """
     keep_cols = list(set(numeric_cols + encoder_cols) - {"Churn"} - {"CLIENTNUM"})
+    logging.info(f"Defined columns to keep for X train dataframe")
+
     return keep_cols
 
 
@@ -183,6 +193,8 @@ def perform_feature_engineering(df, keep_cols, response=None):
     y = df["Churn"]
     X = df[keep_cols]
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
+    logging.info(f"SUCCESS: Split data into X_train, X_test, y_train, y_test")
+
     return X_train, X_test, y_train, y_test
 
 
@@ -212,6 +224,8 @@ def classification_report_image(y_train, y_test, y_train_preds_lr, y_train_preds
     print(classification_report(y_test, y_test_preds_lr))
     print("train results")
     print(classification_report(y_train, y_train_preds_lr))
+
+    logging.info(f"Printed classification report for both models")
 
 
 def feature_importance_plot(model, X_data, output_pth):
@@ -253,8 +267,44 @@ def feature_importance_plot(model, X_data, output_pth):
     fig.savefig(save_pth, dpi=400)
     plt.close()
 
+    logging.info(f"SUCCESS: Generated feature importance plot")
 
-def train_models(X_train, X_test, y_train, y_test, feature_selection_pth="./images/results/", model_pth="./models/"):
+
+def roc_plot(rf, lrc, X_test, y_test, output_pth):
+    """
+    creates and stores the feature importances in pth
+    input:
+            model: model object containing feature_importances_
+            X_data: pandas dataframe of X values
+            output_pth: path to store the figure
+
+    output:
+             None
+    """
+
+    lrc_plot = plot_roc_curve(lrc, X_test, y_test)
+
+    # plots
+    plt.figure(figsize=(20, 10))
+    ax = plt.gca()
+    rfc_disp = plot_roc_curve(rf, X_test, y_test, ax=ax, alpha=0.8)
+    lrc_plot.plot(ax=ax, alpha=0.8)
+
+    # Create plot title
+    plt.title("ROC Curve")
+    plt.xlabel("False Positive Rate")
+    plt.ylabel("True Positive Rate")
+
+    fig = plt.gcf()
+
+    save_pth = output_pth + "ROC_curve.png"
+    fig.savefig(save_pth, dpi=400)
+    plt.close()
+
+    logging.info(f"SUCCESS: Generated ROC plot")
+
+
+def train_models(X_train, X_test, y_train, y_test, results_pth="./images/results/", model_pth="./models/"):
     """
     train, store model results: images + scores, and store models
     input:
@@ -278,8 +328,10 @@ def train_models(X_train, X_test, y_train, y_test, feature_selection_pth="./imag
 
     cv_rfc = GridSearchCV(estimator=rfc, param_grid=param_grid, cv=5)
     cv_rfc.fit(X_train, y_train)
+    logging.info(f"SUCCESS: Fitted grid search random forest")
 
     lrc.fit(X_train, y_train)
+    logging.info(f"SUCCESS: Fitted logistic regression")
 
     # Save best model for random forest
     cv_rfc_best = cv_rfc.best_estimator_
@@ -292,15 +344,16 @@ def train_models(X_train, X_test, y_train, y_test, feature_selection_pth="./imag
 
     classification_report_image(y_train, y_test, y_train_preds_lr, y_train_preds_rf, y_test_preds_lr, y_test_preds_rf)
 
-    # Random forest
-    feature_importance_plot(cv_rfc_best, X_test, output_pth=feature_selection_pth)
+    # Feature importance plot
+    feature_importance_plot(cv_rfc_best, X_test, output_pth=results_pth)
 
-    # Logistic Regression
-    # feature_importance_plot(lrc, X_test, output_pth = "./images/results")
+    # ROC Plot
+    roc_plot(cv_rfc_best, lrc, X_test, y_test, output_pth=results_pth)
 
     # save best model
     joblib.dump(cv_rfc_best, model_pth + "rfc_model.pkl")
     joblib.dump(lrc, model_pth + "logistic_model.pkl")
+    logging.info(f"SUCCESS: Saved both models")
 
 
 def main_pipeline():

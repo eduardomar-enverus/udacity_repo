@@ -1,0 +1,8 @@
+2021-10-20 08:56.805 INFO churn_library - import_data: SUCCESS: Data imported
+2021-10-20 08:57.164 INFO churn_library - import_data: SUCCESS: Data imported
+2021-10-20 08:57.170 INFO churn_library - prepare_data: Converted Attrition_Flag feature into binary Churn feature
+2021-10-20 08:57.171 INFO churn_library - classify_columns: Classified all dataframes columns into categorical or numerical
+2021-10-20 08:58.301 INFO churn_library - perform_eda: SUCCESS: Performed EDA in dataframe. Plots saved here ./images/eda/
+2021-10-20 08:58.325 INFO churn_library - encoder_helper: SUCCESS: Encoded categorical features into churn proportion columns
+2021-10-20 08:58.325 INFO churn_library - cols_to_keep: Defined columns to keep for X train dataframe
+2021-10-20 08:58.329 INFO churn_library - perform_feature_engineering: SUCCESS: Split data into X_train, X_test, y_train, y_test
